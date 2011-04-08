@@ -1,0 +1,8 @@
+# Ignore all object files
+*.o
+
+# Ignore local makefile
+makefile.machine
+
+# Ignore compiled binaries
+bin/
