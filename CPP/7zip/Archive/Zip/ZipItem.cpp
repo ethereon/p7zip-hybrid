@@ -145,6 +145,8 @@ UInt32 CItem::GetWinAttributes() const
       break;
 #ifdef FILE_ATTRIBUTE_UNIX_EXTENSION
     case NFileHeader::NHostOS::kUnix:
+    case NFileHeader::NHostOS::kMac:
+    case NFileHeader::NHostOS::kOSX:
         winAttributes = (ExternalAttributes & 0xFFFF0000) | FILE_ATTRIBUTE_UNIX_EXTENSION; 
         if (winAttributes & (NFileHeader::NUnixAttribute::kIFDIR << 16))
 		winAttributes |= FILE_ATTRIBUTE_DIRECTORY;
