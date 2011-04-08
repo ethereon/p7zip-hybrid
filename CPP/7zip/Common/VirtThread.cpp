@@ -35,12 +35,20 @@ void CVirtThread::Start()
   StartEvent.Set();
 }
 
-CVirtThread::~CVirtThread()
+void CVirtThread::WaitThreadFinish()
 {
-  ExitEvent = true;
-  if (StartEvent.IsCreated())
-    StartEvent.Set();
-  if (Thread.IsCreated())
-    Thread.Wait();
+	ExitEvent = true;
+	if (StartEvent.IsCreated())
+		StartEvent.Set();
+	if (Thread.IsCreated())
+	{
+		Thread.Wait();
+		Thread.Close();
+	}
 }
 
+
+CVirtThread::~CVirtThread()
+{
+	WaitThreadFinish();
+}

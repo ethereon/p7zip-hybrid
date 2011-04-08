@@ -636,6 +636,9 @@ public:
     Fos = FosSpec;
     Result = E_FAIL;
   }
+	
+  ~CThreadDecoder() { WaitThreadFinish(); }
+	
   virtual void Execute();
 };
 
@@ -834,6 +837,8 @@ HRESULT Update(
   CMyComPtr<ICompressProgressInfo> progress = lps;
   lps->Init(updateCallback, true);
 
+  CStreamBinder sb;
+  RINOK(sb.CreateEvents());
   CThreadDecoder threadDecoder;
   if (!folderRefs.IsEmpty())
   {
@@ -962,11 +967,10 @@ HRESULT Update(
       }
       else
       {
-        CStreamBinder sb;
-        RINOK(sb.CreateEvents());
         CMyComPtr<ISequentialOutStream> sbOutStream;
         CMyComPtr<ISequentialInStream> sbInStream;
         sb.CreateStreams(&sbInStream, &sbOutStream);
+		sb.ReInit();
         CBoolVector extractStatuses;
         
         CNum numUnpackStreams = db->NumUnpackStreamsVector[folderIndex];

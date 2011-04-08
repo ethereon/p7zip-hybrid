@@ -16,6 +16,7 @@ struct CVirtThread
   ~CVirtThread();
   WRes Create();
   void Start();
+  void WaitThreadFinish();
   void WaitFinish() { FinishedEvent.Lock(); }
   virtual void Execute() = 0;
 };

@@ -6,3 +6,6 @@ makefile.machine
 
 # Ignore compiled binaries
 bin/
+
+# Ignore test files
+check/
