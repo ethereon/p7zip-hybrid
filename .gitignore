@@ -9,3 +9,6 @@ bin/
 
 # Ignore test files
 check/
+
+# Ignore Xcode project files
+*.Xcode

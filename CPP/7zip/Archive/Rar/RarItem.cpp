@@ -45,7 +45,11 @@ UInt32 CItem::GetWinAttributes() const
       winAttributes = Attrib;
       break;
     default:
-      winAttributes = 0; // must be converted from unix value;
+	  //Attrib is a valid mode_t value in this case. ( emperically )
+	  //Convert to the form expected by NFile::NDirectory::MySetFileAttributes
+	  //Based on the version in ZipItem.cpp
+	  winAttributes = (((UInt32)Attrib) << 16) | FILE_ATTRIBUTE_UNIX_EXTENSION;
+
   }
   if (IsDir())
     winAttributes |= NHeader::NFile::kWinFileDirectoryAttributeMask;
