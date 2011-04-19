@@ -200,11 +200,21 @@ bool CInArchive::ReadUInt32(UInt32 &value)
 
 void CInArchive::ReadFileName(UInt32 nameSize, AString &dest)
 {
+
   if (nameSize == 0)
     dest.Empty();
   char *p = dest.GetBuffer((int)nameSize);
   SafeReadBytes(p, nameSize);
   p[nameSize] = 0;
+#ifdef DETECT_ENCODING
+  //Detect encoding and convert to UTF8 if required.
+  EDStringEncoding enc = encodingDetector.detectEncoding(p, nameSize);
+  if(!encodingDetector.isUTF8(enc)) {
+      char* normalized = encodingDetector.convertToUTF8(p, enc);
+      dest = normalized;
+      encodingDetector.freeString(normalized);
+  }  
+#endif  
   dest.ReleaseBuffer();
 }
 

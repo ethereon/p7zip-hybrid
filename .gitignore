@@ -12,3 +12,6 @@ check/
 
 # Ignore Xcode project files
 *.Xcode
+
+# Ignore build files
+ExtLib/universalchardet/build

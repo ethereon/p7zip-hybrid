@@ -12,6 +12,10 @@
 #include "ZipHeader.h"
 #include "ZipItemEx.h"
 
+#ifdef DETECT_ENCODING
+    #include "EncodingDetector.h"
+#endif
+
 namespace NArchive {
 namespace NZip {
   
@@ -103,6 +107,10 @@ class CInArchive
   HRESULT TryReadCd(CObjectVector<CItemEx> &items, UInt64 cdOffset, UInt64 cdSize, CProgressVirt *progress);
   HRESULT ReadCd(CObjectVector<CItemEx> &items, UInt64 &cdOffset, UInt64 &cdSize, CProgressVirt *progress);
   HRESULT ReadLocalsAndCd(CObjectVector<CItemEx> &items, CProgressVirt *progress, UInt64 &cdOffset, int &numCdItems);
+  
+#ifdef DETECT_ENCODING
+  EncodingDetector encodingDetector;
+#endif
 public:
   CInArchiveInfo ArcInfo;
   bool IsZip64;

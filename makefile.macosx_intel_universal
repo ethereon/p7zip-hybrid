@@ -1,24 +1,51 @@
+#
 #   Mac OS X Intel Universal Makefile
+#
 #   Changes:
 #   - Dual architecture flags ( i386 + x86_64 )
 #   - Compile with base sdk version = 10.5
+#   - Automatic encoding detection using Mozilla's universalchardet library
+#
+
+# --------------------------------------
+# Mac OS X Specific Flags
+# --------------------------------------
+
+MAC_SPECIFIC_FLAGS = -arch i386 -arch x86_64 -mmacosx-version-min=10.5
+
+# --------------------------------------
+# Encoding Detection
+# --------------------------------------
+
+# This file is included from different locations, so search for the absolute path
+EXTLIB_BASE = $(shell python -c "import os; x=os.getcwd(); print filter(lambda p : os.path.exists(p), (os.path.join(x[:-i], 'ExtLib') for i in xrange(len(x))))[0]")
+
+ED_C_FLAGS := -I${EXTLIB_BASE}/universalchardet/src/wrapper/ \
+    -I${EXTLIB_BASE}/universalchardet/src/base/ \
+    -I${EXTLIB_BASE}/universalchardet/src/kludge/ \
+	-DDETECT_ENCODING    
+    
+ED_LIB_FLAGS :=  -L${EXTLIB_BASE}/universalchardet/build/ -luniversalchardet
+
+# --------------------------------------
 
 OPTFLAGS=-O
 
 # don't use -DNDEBUG in order to use MacOSX wxWidgets
-
-ALLFLAGS=-arch i386 -arch x86_64 -mmacosx-version-min=10.5 ${OPTFLAGS}  \
+ALLFLAGS= ${OPTFLAGS}  \
 	-DENV_MACOSX \
-    	-D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE \
+    -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE \
 	-D_REENTRANT -DENV_UNIX \
-	$(LOCAL_FLAGS)
+	-DNDEBUG \
+	$(LOCAL_FLAGS) \
+	$(MAC_SPECIFIC_FLAGS) \
+	$(ED_C_FLAGS)
 
 CXX=c++ $(ALLFLAGS)
 CC=cc $(ALLFLAGS)
 LINK_SHARED=-bundle
 
-LOCAL_LIBS=-framework CoreFoundation
+LOCAL_LIBS=-framework CoreFoundation $(ED_LIB_FLAGS)
 LOCAL_LIBS_DLL=$(LOCAL_LIBS)
 
 OBJ_CRC32=$(OBJ_CRC32_C)
-
