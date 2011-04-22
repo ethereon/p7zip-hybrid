@@ -198,7 +198,7 @@ bool CInArchive::ReadUInt32(UInt32 &value)
   return true;
 }
 
-void CInArchive::ReadFileName(UInt32 nameSize, AString &dest)
+void CInArchive::ReadFileName(UInt32 nameSize, AString &dest, UInt16 flags)
 {
 
   if (nameSize == 0)
@@ -207,13 +207,21 @@ void CInArchive::ReadFileName(UInt32 nameSize, AString &dest)
   SafeReadBytes(p, nameSize);
   p[nameSize] = 0;
 #ifdef DETECT_ENCODING
-  //Detect encoding and convert to UTF8 if required.
-  EDStringEncoding enc = encodingDetector.detectEncoding(p, nameSize);
-  if(!encodingDetector.isUTF8(enc)) {
-      char* normalized = encodingDetector.convertToUTF8(p, enc);
-      dest = normalized;
-      encodingDetector.freeString(normalized);
-  }  
+
+  //Encoding detection can be disabled by the user in the preferences
+  //If bit 11 is set, it implies that the archive uses UTF-8 encoding.
+  if((!(flags&0x800)) && encodingDetector.isDetectionEnabled()) {
+      
+      //Detect encoding and convert to UTF8 if required.      
+      EDStringEncoding enc = encodingDetector.detectEncoding(p, nameSize);
+      
+      if(!encodingDetector.isUTF8(enc)) {
+          
+          char* normalized = encodingDetector.convertToUTF8(p, enc);
+          dest = normalized;
+          encodingDetector.freeString(normalized);
+      }  
+  }
 #endif  
   dest.ReleaseBuffer();
 }
@@ -294,7 +302,7 @@ HRESULT CInArchive::ReadLocalItem(CItemEx &item)
   item.UnPackSize = Get32(p + 18);
   UInt32 fileNameSize = Get16(p + 22);
   item.LocalExtraSize = Get16(p + 24);
-  ReadFileName(fileNameSize, item.Name);
+  ReadFileName(fileNameSize, item.Name, item.Flags);
   item.FileHeaderWithNameSize = 4 + NFileHeader::kLocalBlockSize + fileNameSize;
   if (item.LocalExtraSize > 0)
   {
@@ -474,7 +482,7 @@ HRESULT CInArchive::ReadCdItem(CItemEx &item)
   item.InternalAttributes = Get16(p + 32);
   item.ExternalAttributes = Get32(p + 34);
   item.LocalHeaderPosition = Get32(p + 38);
-  ReadFileName(headerNameSize, item.Name);
+  ReadFileName(headerNameSize, item.Name, item.Flags);
   
   if (headerExtraSize > 0)
   {

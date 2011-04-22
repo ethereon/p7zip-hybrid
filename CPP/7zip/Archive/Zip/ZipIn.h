@@ -82,7 +82,7 @@ class CInArchive
   HRESULT Seek(UInt64 offset);
 
   HRESULT FindAndReadMarker(IInStream *stream, const UInt64 *searchHeaderSizeLimit);
-  void ReadFileName(UInt32 nameSize, AString &dest);
+  void ReadFileName(UInt32 nameSize, AString &dest, UInt16 flags);
   
   HRESULT ReadBytes(void *data, UInt32 size, UInt32 *processedSize);
   bool ReadBytesAndTestSize(void *data, UInt32 size);
