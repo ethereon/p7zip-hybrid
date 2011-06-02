@@ -206,6 +206,9 @@ void CInArchive::ReadName(CItemEx &item, int nameSize)
       else if (!ConvertUTF8ToUnicode(item.Name, item.UnicodeName))
         item.UnicodeName.Empty();
     }
+    
+    item.UnicodeName = MultiByteToUnicodeString(UnicodeStringToMultiByte(item.UnicodeName, CP_OEMCP), CP_OEMCP);
+    
   }
   else
     item.Name.Empty();
