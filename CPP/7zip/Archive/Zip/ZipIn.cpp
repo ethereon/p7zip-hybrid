@@ -218,9 +218,13 @@ void CInArchive::ReadFileName(UInt32 nameSize, AString &dest, UInt16 flags)
       if(!encodingDetector.isUTF8(enc)) {
           
           char* normalized = encodingDetector.convertToUTF8(p, enc);
-          dest = normalized;
-          encodingDetector.freeString(normalized);
-      }  
+          
+          if(normalized) {
+              
+              dest = normalized;
+              encodingDetector.freeString(normalized);
+          }
+      }
   }
 #endif  
   dest.ReleaseBuffer();

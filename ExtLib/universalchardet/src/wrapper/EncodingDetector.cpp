@@ -167,6 +167,8 @@ char* EncodingDetector::convertToUTF8(const char* cString, EDStringEncoding enco
     
     CFStringRef cfString = CFStringCreateWithCString(kCFAllocatorDefault, cString, encoding);
     
+    if(!cfString) return NULL;
+    
     CFIndex bufferSize = CFStringGetMaximumSizeForEncoding(CFStringGetLength(cfString), kCFStringEncodingUTF8);
     
     char* buffer = (char*)malloc(bufferSize);
