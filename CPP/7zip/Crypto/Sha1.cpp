@@ -142,17 +142,19 @@ void CContext::UpdateRar(Byte *data, size_t size, bool rar350Mode)
     _buffer[curBufferPos >> 2] |= ((UInt32)*data++) << (8 * (3 - pos));
     if (++curBufferPos == kBlockSize)
     {
-      curBufferPos = 0;
-      CContextBase::UpdateBlock(_buffer, returnRes);
-      if (returnRes)
-        for (int i = 0; i < kBlockSizeInWords; i++)
-        {
-          UInt32 d = _buffer[i];
-          data[i * 4 + 0 - kBlockSize] = (Byte)(d);
-          data[i * 4 + 1 - kBlockSize] = (Byte)(d >>  8);
-          data[i * 4 + 2 - kBlockSize] = (Byte)(d >> 16);
-          data[i * 4 + 3 - kBlockSize] = (Byte)(d >> 24);
-        }
+        //Incorporating patch from : http://sourceforge.net/tracker/?func=detail&aid=3314311&group_id=111810&atid=660493
+        //Fixes crashes in listing header encrypted rar archives with password length's greater than 30.
+        curBufferPos = 0;
+        CContextBase::UpdateBlock(_buffer, returnRes);
+        if (returnRes)
+            for (unsigned i = 0; i < kBlockSizeInWords; i++)
+            {
+                UInt32 d = _buffer[i];
+                data[(int)i * 4 + 0 - (int)kBlockSize] = (Byte)(d);
+                data[(int)i * 4 + 1 - (int)kBlockSize] = (Byte)(d >> 8);
+                data[(int)i * 4 + 2 - (int)kBlockSize] = (Byte)(d >> 16);
+                data[(int)i * 4 + 3 - (int)kBlockSize] = (Byte)(d >> 24);
+            }
       returnRes = rar350Mode;
     }
   }
