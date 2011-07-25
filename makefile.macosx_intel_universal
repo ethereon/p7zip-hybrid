@@ -3,7 +3,7 @@
 #
 #   Changes:
 #   - Dual architecture flags ( i386 + x86_64 )
-#   - Compile with base sdk version = 10.5
+#   - Compile with base sdk version = 10.6
 #   - Automatic encoding detection using Mozilla's universalchardet library
 #
 
@@ -11,7 +11,7 @@
 # Mac OS X Specific Flags
 # --------------------------------------
 
-MAC_SPECIFIC_FLAGS = -arch i386 -arch x86_64 -mmacosx-version-min=10.5
+MAC_SPECIFIC_FLAGS = -arch i386 -arch x86_64 -mmacosx-version-min=10.6
 
 # --------------------------------------
 # Encoding Detection
