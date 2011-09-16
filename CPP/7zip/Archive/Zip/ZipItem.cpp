@@ -6,6 +6,7 @@
 #include "ZipItem.h"
 #include "../Common/ItemNameUtils.h"
 #include "../../../../C/CpuArch.h"
+#include <sys/stat.h>
 
 namespace NArchive {
 namespace NZip {
@@ -155,8 +156,31 @@ UInt32 CItem::GetWinAttributes() const
     default:
       winAttributes = 0; // must be converted from unix value;
   }
-  if (IsDir())       // test it;
+
+  bool fileIsDir = IsDir();
+  
+#ifdef __APPLE_CC__
+  //FIX FOR OS X: It appears that certain archivers don't properly record
+  //the file permissions. This is particularly annoying when the executable
+  //permission is lost. An app bundle will fail to launch silently (only 
+  //logging a message in the console, that the user might not check).
+  //The OS X Archiver Utility resolves this by unconditionally setting the 
+  //executable permission on each file if the host OS is not explicitly
+  //specified as unix. Due to the lack of an elegant solution here, we
+  //do the same thing below.
+  if(MadeByVersion.HostOS!=NFileHeader::NHostOS::kUnix) {
+      
+      //The MySetFileAttributes function (FileDir.cpp) takes care of applying the umask for us.
+      //It expects the unix mode to be in the upper word, hence the <<16.
+      mode_t typeMask = fileIsDir?S_IFDIR:S_IFREG;
+      winAttributes =  (((typeMask | 0777))<<16) | FILE_ATTRIBUTE_UNIX_EXTENSION;
+  }
+
+#endif
+ 
+  if (fileIsDir)       // test it;
     winAttributes |= FILE_ATTRIBUTE_DIRECTORY;
+     
   return winAttributes;
 }
 
