@@ -13,13 +13,37 @@
 namespace NArchive {
 namespace NTar {
 
+static int CompareTarUpdateItems(void *const *x, void *const *y, void *)
+{
+    const CUpdateItem* p1 = *((const CUpdateItem**)x);
+    const CUpdateItem* p2 = *((const CUpdateItem**)y);
+    
+    if(!(p1->NewProps || p2->NewProps)) //Both are existing files
+        return MyCompare(p1->IndexInArchive, p2->IndexInArchive);
+    
+    if(p1->NewProps!=p2->NewProps)
+        return p1->NewProps?1:-1; //We want the existing file on the top
+    
+    return 0;
+}
+
 HRESULT UpdateArchive(IInStream *inStream, ISequentialOutStream *outStream,
     const CObjectVector<NArchive::NTar::CItemEx> &inputItems,
-    const CObjectVector<CUpdateItem> &updateItems,
+    const CObjectVector<CUpdateItem> &updateItemsUnsorted,
     IArchiveUpdateCallback *updateCallback)
 {
   COutArchive outArchive;
   outArchive.Create(outStream);
+
+  CObjectVector<CUpdateItem> updateItems(updateItemsUnsorted);
+
+  if(inputItems.Size()!=0) { //Existing archives only
+      
+      //Sort the update items to make sure that we preserve the
+      //physical ordering of archived files. This prevents the pax
+      //extended headers from being incorrectly located.
+      updateItems.Sort(CompareTarUpdateItems, NULL);
+  }
 
   UInt64 complexity = 0;
 
