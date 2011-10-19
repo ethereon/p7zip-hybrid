@@ -18,6 +18,7 @@
 #include "ExtractMode.h"
 #include "IFileExtractCallback.h"
 #include "OpenArchive.h"
+#include "AppleDoubleEntry.h"
 
 class CArchiveExtractCallback:
   public IArchiveExtractCallback,
@@ -82,6 +83,11 @@ class CArchiveExtractCallback:
   CMyComPtr<ICompressProgressInfo> _localProgress;
   UInt64 _packTotal;
   UInt64 _unpTotal;
+  
+#ifdef __APPLE__
+  AppleDoubleEntry* _adHead;
+  AString metaDirPath;
+#endif
 
   void CreateComplexDirectory(const UStringVector &dirPathParts, UString &fullPath);
   HRESULT GetTime(int index, PROPID propID, FILETIME &filetime, bool &filetimeIsDefined);
@@ -116,6 +122,9 @@ public:
   {
     LocalProgressSpec = new CLocalProgress();
     _localProgress = LocalProgressSpec;
+    #ifdef __APPLE__
+    _adHead = NULL;
+    #endif
   }
 
   void InitForMulti(bool multiArchives,
@@ -137,6 +146,8 @@ public:
       const UString &directoryPath,
       const UStringVector &removePathParts,
       UInt64 packSize);
+
+  void PerformPostProcessing();
 
 };
 

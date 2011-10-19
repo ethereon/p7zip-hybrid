@@ -4,6 +4,7 @@
 
 #include "Common/ComTry.h"
 #include "Common/Wildcard.h"
+#include "Common/StringConvert.h"
 
 #include "Windows/FileDir.h"
 #include "Windows/FileFind.h"
@@ -219,9 +220,35 @@ STDMETHODIMP CArchiveExtractCallback::GetStream(UInt32 index, ISequentialOutStre
 
     UStringVector pathParts;
     SplitPathToParts(fullPath, pathParts);
-    
+  
     if (pathParts.IsEmpty())
       return E_FAIL;
+    
+#ifdef __APPLE__
+    
+    UString &itemName = pathParts[pathParts.Size()-1];    
+    wchar_t* wcItemName = itemName.GetBuffer(itemName.Length()+1);
+    
+    //Is this file in the __MACOSX dir?      
+    bool isMetaEnclosed = (pathParts[0].Compare(L"__MACOSX")==0);
+    
+    //Is it an AppleDouble metadata file?
+    bool isMetadataFile = itemName.Length()>2 && wcItemName[0]==L'.' && wcItemName[1]==L'_';
+    
+    //Is this just a metadata dir entry (or potentially an invalid file entry)? Skip it.
+    if((isMetaEnclosed && !isMetadataFile))
+        return S_OK;
+
+    //Remove the "._" prefix    
+    if(isMetadataFile)
+        itemName.Delete(0, 2);
+                
+    //Remove the "__MACOSX" prefix
+    if(isMetaEnclosed)                        
+        pathParts.Delete(0);
+    
+#endif
+    
     int numRemovePathParts = 0;
     switch(_pathMode)
     {
@@ -253,8 +280,11 @@ STDMETHODIMP CArchiveExtractCallback::GetStream(UInt32 index, ISequentialOutStre
         if (!pathParts.IsEmpty())
           pathParts.DeleteBack();
       }
-    
+#ifdef __APPLE__    
+      if (!(pathParts.IsEmpty() || isMetaEnclosed || isMetadataFile))
+#else
       if (!pathParts.IsEmpty())
+#endif
       {
         UString fullPathNew;
         CreateComplexDirectory(pathParts, fullPathNew);
@@ -265,8 +295,7 @@ STDMETHODIMP CArchiveExtractCallback::GetStream(UInt32 index, ISequentialOutStre
             (WriteMTime && _fi.MTimeDefined) ? &_fi.MTime : (_arc->MTimeDefined ? &_arc->MTime : NULL));
       }
     }
-
-
+    
     UString fullProcessedPath = _directoryPath + processedPath;
 
     if (_fi.IsDir)
@@ -276,6 +305,39 @@ STDMETHODIMP CArchiveExtractCallback::GetStream(UInt32 index, ISequentialOutStre
         NFile::NDirectory::MyRemoveDirectory(_diskFilePath);
       return S_OK;
     }
+    
+#ifdef __APPLE__
+        
+    if(isMetadataFile) {
+        
+        if(_adHead==NULL) {
+            
+            //Create a temp dir in the extraction dir to store the metadata
+            metaDirPath = UnicodeStringToMultiByte(_directoryPath + L".metadata.XXXXXXXX");
+            int metaDirLen = metaDirPath.Length();
+            char* metaBuffer = metaDirPath.GetBuffer(metaDirLen+2);
+            mkdtemp(metaBuffer);
+            metaBuffer[metaDirLen]='/';
+            metaBuffer[metaDirLen+1]=0;
+            metaDirPath.ReleaseBuffer();
+        }
+
+        AppleDoubleEntry* newEntry = new AppleDoubleEntry(_adHead);
+        _adHead = newEntry;
+        
+        //The file to which the extended attributes will be applied
+        newEntry->targetPath = UnicodeStringToMultiByte(fullProcessedPath);
+        
+        //Extract the metadata file to a temporary location
+        newEntry->metadataPath = metaDirPath + "meta.XXXXXXXX";
+        char* metaPathBuffer = newEntry->metadataPath.GetBuffer(newEntry->metadataPath.Length()+1);
+        mktemp(metaPathBuffer);
+        newEntry->metadataPath.ReleaseBuffer();
+        
+        fullProcessedPath = MultiByteToUnicodeString(newEntry->metadataPath);                
+    } 
+    
+#endif
 
     if (!_isSplit)
     {
@@ -486,3 +548,19 @@ STDMETHODIMP CArchiveExtractCallback::CryptoGetTextPassword(BSTR *password)
   COM_TRY_END
 }
 
+void CArchiveExtractCallback::PerformPostProcessing()
+{
+#ifdef __APPLE__    
+    //Process any extended attributes queued during extraction    
+    if(_adHead) {
+        while(_adHead) {
+            AppleDoubleEntry* ce = _adHead;
+            ce->mergeMetadata();
+            unlink(ce->metadataPath);
+            _adHead = ce->nextEntry;
+            delete ce;   
+        }
+        rmdir((const char*)metaDirPath);
+    }
+#endif
+}

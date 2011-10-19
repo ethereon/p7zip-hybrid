@@ -96,6 +96,8 @@ static HRESULT DecompressArchive(
   else
     result = archive->Extract(&realIndices.Front(), realIndices.Size(), testMode, extractCallbackSpec);
 
+  extractCallbackSpec->PerformPostProcessing();
+  
   return callback->ExtractResult(result);
 }
 
