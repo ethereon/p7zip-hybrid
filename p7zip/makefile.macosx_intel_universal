@@ -17,15 +17,15 @@ MAC_SPECIFIC_FLAGS = -arch i386 -arch x86_64 -mmacosx-version-min=10.6
 # Encoding Detection
 # --------------------------------------
 
-# This file is included from different locations, so search for the absolute path
-EXTLIB_BASE = $(shell python -c "import os; x=os.getcwd(); print filter(lambda p : os.path.exists(p), (os.path.join(x[:-i], 'ExtLib') for i in xrange(len(x))))[0]")
+EXT_LIB_PATH = $(SRC_ROOT_PATH)/../ext-libs
+ED_BASE_PATH = $(EXT_LIB_PATH)/universalchardet
 
-ED_C_FLAGS := -I${EXTLIB_BASE}/universalchardet/src/wrapper/ \
-    -I${EXTLIB_BASE}/universalchardet/src/base/ \
-    -I${EXTLIB_BASE}/universalchardet/src/kludge/ \
-	-DDETECT_ENCODING    
-    
-ED_LIB_FLAGS :=  -L${EXTLIB_BASE}/universalchardet/build/ -luniversalchardet
+ED_C_FLAGS := -I$(ED_BASE_PATH)/src/wrapper/ \
+    -I$(ED_BASE_PATH)/src/base/ \
+    -I$(ED_BASE_PATH)/src/kludge/ \
+    -DDETECT_ENCODING
+
+ED_LIB_FLAGS :=  -L$(ED_BASE_PATH)/build/ -luniversalchardet
 
 # --------------------------------------
 
