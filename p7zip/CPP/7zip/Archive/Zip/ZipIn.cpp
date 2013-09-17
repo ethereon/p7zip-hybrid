@@ -208,25 +208,18 @@ void CInArchive::ReadFileName(UInt32 nameSize, AString &dest, UInt16 flags)
   p[nameSize] = 0;
 #ifdef DETECT_ENCODING
 
-  //Encoding detection can be disabled by the user in the preferences
   //If bit 11 is set, it implies that the archive uses UTF-8 encoding.
-  if((!(flags&0x800)) && encodingDetector.isDetectionEnabled()) {
-      
-      //Detect encoding and convert to UTF8 if required.      
-      EDStringEncoding enc = encodingDetector.detectEncoding(p, nameSize);
-      
-      if(!encodingDetector.isUTF8(enc)) {
-          
-          char* normalized = encodingDetector.convertToUTF8(p, enc);
-          
-          if(normalized) {
-              
-              dest = normalized;
-              encodingDetector.freeString(normalized);
-          }
-      }
+  if(!(flags&0x800))
+  {
+    //Detect encoding and convert to UTF8 if required.
+    char* normalized = encodingDetector.getUTF8Representation(p, nameSize);
+    if(normalized)
+    {
+      dest = normalized;
+      encodingDetector.freeString(normalized);
+    }
   }
-#endif  
+#endif
   dest.ReleaseBuffer();
 }
 

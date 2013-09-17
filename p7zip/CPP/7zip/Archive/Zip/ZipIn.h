@@ -107,9 +107,9 @@ class CInArchive
   HRESULT TryReadCd(CObjectVector<CItemEx> &items, UInt64 cdOffset, UInt64 cdSize, CProgressVirt *progress);
   HRESULT ReadCd(CObjectVector<CItemEx> &items, UInt64 &cdOffset, UInt64 &cdSize, CProgressVirt *progress);
   HRESULT ReadLocalsAndCd(CObjectVector<CItemEx> &items, CProgressVirt *progress, UInt64 &cdOffset, int &numCdItems);
-  
+
 #ifdef DETECT_ENCODING
-  EncodingDetector encodingDetector;
+  EncDetect::EncodingDetector encodingDetector;
 #endif
 public:
   CInArchiveInfo ArcInfo;
