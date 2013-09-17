@@ -18,14 +18,10 @@ MAC_SPECIFIC_FLAGS = -arch i386 -arch x86_64 -mmacosx-version-min=10.6
 # --------------------------------------
 
 EXT_LIB_PATH = $(SRC_ROOT_PATH)/../ext-libs
-ED_BASE_PATH = $(EXT_LIB_PATH)/universalchardet
+ED_BASE_PATH = $(EXT_LIB_PATH)/EncodingDetector
 
-ED_C_FLAGS := -I$(ED_BASE_PATH)/src/wrapper/ \
-    -I$(ED_BASE_PATH)/src/base/ \
-    -I$(ED_BASE_PATH)/src/kludge/ \
-    -DDETECT_ENCODING
-
-ED_LIB_FLAGS :=  -L$(ED_BASE_PATH)/build/ -luniversalchardet
+ED_C_FLAGS := -I$(ED_BASE_PATH)/include -DDETECT_ENCODING
+ED_LIB_FLAGS := -lencodingdetector
 
 # --------------------------------------
 
@@ -45,7 +41,7 @@ CXX=c++ $(ALLFLAGS)
 CC=cc $(ALLFLAGS)
 LINK_SHARED=-bundle
 
-LOCAL_LIBS=-framework CoreFoundation $(ED_LIB_FLAGS)
+LOCAL_LIBS=-framework CoreFoundation -L$(EXT_LIB_PATH)/dist $(ED_LIB_FLAGS)
 LOCAL_LIBS_DLL=$(LOCAL_LIBS)
 
 OBJ_CRC32=$(OBJ_CRC32_C)

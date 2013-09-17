@@ -2,10 +2,10 @@
 *.o
 
 # Ignore local makefile
-makefile.machine
+p7zip/makefile.machine
 
 # Ignore compiled binaries
-bin/
+p7zip/bin/
 
 # Ignore test files
 check/
@@ -13,5 +13,5 @@ check/
 # Ignore Xcode project files
 *.Xcode
 
-# Ignore build files
-ExtLib/universalchardet/build
+# Ignore ext-lib binaries
+ext-libs/dist
