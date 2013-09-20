@@ -89,6 +89,32 @@ AString UnicodeStringToMultiByte(const UString &srcString, UINT codePage)
   return resultString;
 }
 
+UString NormalizeUnicodeString(const UString &unicodeString)
+{
+  const wchar_t* wcs = &unicodeString[0];
+  const CFIndex bufferCapacity = 4096;
+  UniChar uniChars[bufferCapacity];
+  size_t n = wcslen(wcs);
+  for(size_t i=0; i<n; ++i)
+  {
+    uniChars[i] = wcs[i];
+  }
+  CFMutableStringRef stringRep = CFStringCreateMutableWithExternalCharactersNoCopy(kCFAllocatorDefault,
+                                                                                   uniChars,
+                                                                                   n,
+                                                                                   bufferCapacity,
+                                                                                   kCFAllocatorNull);
+  CFStringNormalize(stringRep, kCFStringNormalizationFormC);
+  CFIndex normalizedLength = CFStringGetLength(stringRep);
+  UString normalizedString;
+  for(CFIndex i=0; i<normalizedLength; ++i)
+  {
+    normalizedString += uniChars[i];
+  }
+  CFRelease(stringRep);
+  return normalizedString;
+}
+
 #else /* __APPLE_CC__ */
 
 

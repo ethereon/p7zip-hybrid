@@ -11,6 +11,9 @@ UString MultiByteToUnicodeString(const AString &srcString, UINT codePage = CP_AC
 AString UnicodeStringToMultiByte(const UString &srcString, UINT codePage, char defaultChar, bool &defaultCharWasUsed);
 AString UnicodeStringToMultiByte(const UString &srcString, UINT codePage = CP_ACP);
 
+#ifdef __APPLE__
+UString NormalizeUnicodeString(const UString &unicodeString);
+#endif
 
 inline const wchar_t* GetUnicodeString(const wchar_t* unicodeString)
   { return unicodeString; }

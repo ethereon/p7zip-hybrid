@@ -207,8 +207,8 @@ void CInArchive::ReadName(CItemEx &item, int nameSize)
         item.UnicodeName.Empty();
     }
     
-#ifdef __APPLE_CC__
-    item.UnicodeName = MultiByteToUnicodeString(UnicodeStringToMultiByte(item.UnicodeName, CP_OEMCP), CP_OEMCP);
+#ifdef __APPLE__
+    item.UnicodeName = NormalizeUnicodeString(item.UnicodeName);
 #endif
     
   }
