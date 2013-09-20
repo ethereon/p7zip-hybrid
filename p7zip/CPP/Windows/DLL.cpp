@@ -2,7 +2,7 @@
 
 #include "StdAfx.h"
 
-#ifdef __APPLE_CC__
+#ifdef USE_LEGACY_APPLE_DYLD
 #include <mach-o/dyld.h>
 #elif ENV_BEOS
 #include <kernel/image.h>
@@ -39,7 +39,7 @@ TRACEN((printf("CLibrary::Free(%p)\n",(void *)_module)))
   if (_module == 0)
     return true;
 
-#ifdef __APPLE_CC__
+#ifdef USE_LEGACY_APPLE_DYLD
   int ret = NSUnLinkModule ((NSModule)_module, 0);
 #elif ENV_BEOS
   int ret = unload_add_on((image_id)_module);
@@ -57,7 +57,7 @@ static FARPROC local_GetProcAddress(HMODULE module,LPCSTR lpProcName)
   void *ptr = 0;
   TRACEN((printf("local_GetProcAddress(%p,%s)\n",(void *)module,lpProcName)))
   if (module) {
-#ifdef __APPLE_CC__
+#ifdef USE_LEGACY_APPLE_DYLD
     char name[MAX_PATHNAME_LEN];
     snprintf(name,sizeof(name),"_%s",lpProcName);
     name[sizeof(name)-1] = 0;
@@ -115,7 +115,7 @@ bool CLibrary::Load(LPCTSTR lpLibFileName)
 
   TRACEN((printf("CLibrary::Load(%ls) => %s\n",lpLibFileName,name)))
 
-#ifdef __APPLE_CC__
+#ifdef USE_LEGACY_APPLE_DYLD
   NSObjectFileImage image;
   NSObjectFileImageReturnCode nsret;
 
@@ -155,7 +155,7 @@ TRACEN((printf("load_add_on(%s)=%d\n",p.Path(),(int)image)))
 #endif
   TRACEN((printf("CLibrary::Load - dlopen(%s,0x%d)\n",name,options_dlopen)))
   handler = dlopen(name,options_dlopen);
-#endif // __APPLE_CC__
+#endif // USE_LEGACY_APPLE_DYLD
   TRACEN((printf("CLibrary::Load(%s) => %p\n",name,handler)))
   if (handler) {
 
@@ -173,7 +173,7 @@ TRACEN((printf("load_add_on(%s)=%d\n",p.Path(),(int)image)))
     if (fctTest) fctTest();
 
   } else {
-#ifdef __APPLE_CC__
+#ifdef USE_LEGACY_APPLE_DYLD
     NSLinkEditErrors c;
     int num_err;
     const char *file,*err;
