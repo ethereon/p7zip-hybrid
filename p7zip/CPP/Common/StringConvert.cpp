@@ -19,74 +19,40 @@ int global_use_utf16_conversion = 0;
 
 UString MultiByteToUnicodeString(const AString &srcString, UINT codePage)
 {
-  if (!srcString.IsEmpty())
-  {
-    UString resultString;
-    const char * path = &srcString[0];
-
-// FIXME    size_t n = strlen(path);
-
-    CFStringRef cfpath = CFStringCreateWithCString(NULL,path,kCFStringEncodingUTF8);
-
-    if (cfpath)
-    {
-
-       CFMutableStringRef cfpath2 = CFStringCreateMutableCopy(NULL,0,cfpath);
-       CFRelease(cfpath);
-       CFStringNormalize(cfpath2,kCFStringNormalizationFormC);
-    
-       size_t n = CFStringGetLength(cfpath2);
-       for(size_t i =   0 ; i< n ;i++) {
-         resultString += CFStringGetCharacterAtIndex(cfpath2,i);
-       }
-
-       CFRelease(cfpath2);  
-
-       return resultString;
-    }
-  }
-
+  const char* cString = &srcString[0];
+  CFMutableStringRef stringRep = CFStringCreateMutable(kCFAllocatorDefault, strlen(cString));
+  CFStringAppendCString(stringRep, cString, kCFStringEncodingUTF8);
+  CFStringNormalize(stringRep, kCFStringNormalizationFormC);
   UString resultString;
-  for (int i = 0; i < srcString.Length(); i++)
-    resultString += wchar_t(srcString[i] & 255);
-
+  size_t n = CFStringGetLength(stringRep);
+  for(size_t i=0; i<n; ++i)
+  {
+    resultString += CFStringGetCharacterAtIndex(stringRep, i);
+  }
+  CFRelease(stringRep);
   return resultString;
 }
 
 AString UnicodeStringToMultiByte(const UString &srcString, UINT codePage)
 {
-  if (!srcString.IsEmpty())
+  const wchar_t * wcs = &srcString[0];
+  const CFIndex bufferCapacity = 4096;
+  char utf8[bufferCapacity];
+  UniChar uniChars[bufferCapacity];
+  size_t n = wcslen(wcs);
+  for(size_t i=0; i<=n; ++i)
   {
-    const wchar_t * wcs = &srcString[0];
-    char utf8[4096];
-    UniChar unipath[4096];
-
-    size_t n = wcslen(wcs);
-
-    for(size_t i =   0 ; i<= n ;i++) {
-      unipath[i] = wcs[i];
-    }
-
-    CFStringRef cfpath = CFStringCreateWithCharacters(NULL,unipath,n);
-
-    CFMutableStringRef cfpath2 = CFStringCreateMutableCopy(NULL,0,cfpath);
-    CFRelease(cfpath);
-    CFStringNormalize(cfpath2,kCFStringNormalizationFormD);
-    
-    CFStringGetCString(cfpath2,(char *)utf8,4096,kCFStringEncodingUTF8);
-
-    CFRelease(cfpath2);  
-
-    return AString(utf8);
+    uniChars[i] = wcs[i];
   }
-
-  AString resultString;
-  for (int i = 0; i < srcString.Length(); i++)
-  {
-    if (srcString[i] >= 256) resultString += '?';
-    else                     resultString += char(srcString[i]);
-  }
-  return resultString;
+  CFMutableStringRef stringRep = CFStringCreateMutableWithExternalCharactersNoCopy(kCFAllocatorDefault,
+                                                                                   uniChars,
+                                                                                   n,
+                                                                                   bufferCapacity,
+                                                                                   kCFAllocatorNull);
+  CFStringNormalize(stringRep, kCFStringNormalizationFormD);
+  CFStringGetCString(stringRep, utf8, bufferCapacity, kCFStringEncodingUTF8);
+  CFRelease(stringRep);
+  return AString(utf8);
 }
 
 UString NormalizeUnicodeString(const UString &unicodeString)
