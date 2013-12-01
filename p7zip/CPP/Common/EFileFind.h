@@ -41,9 +41,9 @@ private:
     if (!(s.st_mode & S_IWUSR))
       this->Attrib |= FILE_ATTRIBUTE_READONLY;
     this->Attrib |= FILE_ATTRIBUTE_UNIX_EXTENSION + ((s.st_mode & 0xFFFF) << 16);
-    RtlSecondsSince1970ToFileTime( s.st_ctime, &(this->CTime) );
-    RtlSecondsSince1970ToFileTime( s.st_mtime, &(this->MTime) );
-    RtlSecondsSince1970ToFileTime( s.st_atime, &(this->ATime) );
+    RtlSecondsSince1970ToFileTime( (DWORD)(s.st_ctime), &(this->CTime) );
+    RtlSecondsSince1970ToFileTime( (DWORD)(s.st_mtime), &(this->MTime) );
+    RtlSecondsSince1970ToFileTime( (DWORD)(s.st_atime), &(this->ATime) );
     UString fullPath = fp;
     this->Name = fullPath.Mid(fullPath.ReverseFind(L'/')+1);
     return true;
