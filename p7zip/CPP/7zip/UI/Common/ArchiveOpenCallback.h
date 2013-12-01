@@ -5,8 +5,7 @@
 
 #include "Common/MyCom.h"
 #include "Common/MyString.h"
-
-#include "Windows/FileFind.h"
+#include "Common/EFileFind.h"
 
 #ifndef _NO_CRYPTO
 #include "../../IPassword.h"
@@ -78,7 +77,7 @@ public:
 
 private:
   UString _folderPrefix;
-  NWindows::NFile::NFind::CFileInfoW _fileInfo;
+  NWindows::NFile::NFind::EFileInfoW _fileInfo;
   bool _subArchiveMode;
   UString _subArchiveName;
 public:
